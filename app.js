@@ -26,13 +26,14 @@ setInterval(function() {
 		});
 
 		var tTt = _.difference(newTrends, trends);
-		trends = newTrends;
+		trends = [];
 
 		var tweetString = '';
 		_.each(tTt, function(data){
 			if (!_.isUndefined(data)) {
 				if((tweetString.length + data.length) < 100)
 					tweetString = tweetString + " '" + data + "'";
+					trends.push(tweetString);
 			}
 		});
 
