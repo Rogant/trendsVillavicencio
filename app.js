@@ -26,19 +26,17 @@ setInterval(function() {
 		});
 
 		var tTt = _.difference(newTrends, trends);
-		trends = [];
+		trends = newTrends;
 
 		var tweetString = '';
 		_.each(tTt, function(data){
 			if (!_.isUndefined(data)) {
 				if((tweetString.length + data.length) < 100){
 					tweetString = tweetString + " '" + data + "'";
-					trends.push(data);
+					//trends.push(data);
 				}
 			}
 		});
-
-		console.log(trends);
 
 		var currentdate = new Date(); 
 		console.log(currentdate+': '+tweetString + ' ahora es una tendencia en #Villavicencio');
