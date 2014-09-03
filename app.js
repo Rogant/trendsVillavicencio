@@ -21,7 +21,8 @@ setInterval(function() {
 	T.get('trends/place', { id: '23424787' },  function (err, data, response) {
 
 		var newTrends = _.map(data[0].trends, function(currentObject) {
-			return _.values(_.pick(currentObject, "name"));
+			var tmp = _.values(_.pick(currentObject, "name"));
+			return tmp[0];
 		});
 
 		var tTt = _.difference(newTrends, trends);
