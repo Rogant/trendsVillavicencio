@@ -1,3 +1,4 @@
+var _ = require("underscore");
 var Twit = require('twit');
 var config = require('./config.json');
 
@@ -8,7 +9,7 @@ var T = new Twit({
   , access_token_secret:  config.accessTokenSecret
 });
 
-
+// Averiguar el id del lugar
 /*T.get('trends/closest', { lat: '4.1425', long: '-73.629444' },  function (err, data, response) {
   console.log(err);
   console.log(data);
@@ -18,25 +19,21 @@ var trends = new Array();
 
 setInterval(function() {
 	T.get('trends/place', { id: '23424787' },  function (err, data, response) {
-		var tTt = new Array();
 
-		var i2 = 0;
-		for (i = 0; i < data[0].trends.length; i++) {
-			if(trends.indexOf(data[0].trends[i].name) < 0){
-				tTt[i2] = data[0].trends[i].name;
-				i2++;
-			}
+		var newTrends = _.map(data[0].trends, function(currentObject) {
+			return _.values(_.pick(currentObject, "name"));
+		});
 
-			trends[i] = data[0].trends[i].name;
-		}
+		var tTt = _.difference(newTrends, trends);
+		trends = newTrends;
 
 		var tweetString = '';
-		for (i = 0; i < tTt.length; i++) {
-			if (typeof tTt[i] != 'undefined') {
-				if((tweetString.length + tTt[i].length) < 100)
-					tweetString = tweetString + " '" + tTt[i] + "'";
+		_.each(tTt, function(data){
+			if (!_.isUndefined(data)) {
+				if((tweetString.length + data.length) < 100)
+					tweetString = tweetString + " '" + data + "'";
 			}
-		}
+		});
 
 		var currentdate = new Date(); 
 		console.log(currentdate+': '+tweetString + ' ahora es una tendencia en #Villavicencio');
