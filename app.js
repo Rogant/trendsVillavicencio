@@ -39,10 +39,10 @@ setInterval(function() {
 		});
 
 		var currentdate = new Date(); 
-		console.log(currentdate+': '+tweetString + ' ahora es una tendencia en #Villavicencio');
+		console.log(currentdate+': '+tweetString + ' ahora es una tendencia en #Medellín');
 
 		if(tTt.length > 0){
-			T.post('statuses/update', { status: tweetString + ' ahora es una tendencia en #Villavicencio' }, function(err, data, response) {
+			T.post('statuses/update', { status: tweetString + ' ahora es una tendencia en #Medellín' }, function(err, data, response) {
 				//console.log(data);
 			});
 		}
