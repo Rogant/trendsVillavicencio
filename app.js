@@ -10,7 +10,7 @@ var T = new Twit({
 });
 
 // Averiguar el id del lugar
-/*T.get('trends/closest', { lat: '4.1425', long: '-73.629444' },  function (err, data, response) {
+/*T.get('trends/closest', { lat: '6.230833', long: '-75.590556' },  function (err, data, response) {
   console.log(err);
   console.log(data);
 })*/
@@ -18,7 +18,7 @@ var T = new Twit({
 var trends = new Array();
 
 setInterval(function() {
-	T.get('trends/place', { id: '23424787' },  function (err, data, response) {
+	T.get('trends/place', { id: '368150' },  function (err, data, response) {
 
 		var newTrends = _.map(data[0].trends, function(currentObject) {
 			var tmp = _.values(_.pick(currentObject, "name"));
