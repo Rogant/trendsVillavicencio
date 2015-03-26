@@ -14,8 +14,9 @@ var trends = new Array();
 
 setInterval(function() {
 	var random10 = Math.floor((Math.random() * 10) + 1);
+	var currentdate = new Date(); 
 
-	T.get('trends/place', { id: '23424787' },  function (err, data, response) {
+	T.get('trends/place', { id: config.place },  function (err, data, response) {
 
 		var newTrends = _.map(data[0].trends, function(currentObject) {
 			var tmp = _.values(_.pick(currentObject, "name"));
@@ -38,38 +39,45 @@ setInterval(function() {
 			var random = Math.floor((Math.random() * 100) + 1);
 			var toFav = data.statuses[random];
 
-			console.log('https://twitter.com/'+toFav.user.screen_name+'/status/'+toFav.id_str);
-
-			T.post('favorites/create', { id: toFav.id_str },  function (err, data, response) {
-				//console.log(data.id);
-			});
+			if(toFav.user.id != config.userId){
+				T.post('favorites/create', { id: toFav.id_str },  function (err, data, response) {
+					if(err){
+						console.log(err);
+					}else{
+						console.log(currentdate +', favorite: '+ data.id);
+					}
+				});
+			}
 		});
 
-		var currentdate = new Date(); 
-		console.log(currentdate+': '+tweetString + ' ahora es una tendencia en #Villavicencio');
-
 		if(tTt.length > 0){
-			T.post('statuses/update', { status: tweetString + ' ahora es una tendencia en #Villavicencio' }, function(err, data, response) {
-				//console.log(data.id);
+			T.post('statuses/update', { status: tweetString + config.template }, function(err, data, response) {
+				if(err){
+					console.log(err);
+				}else{
+					console.log(currentdate+': '+tweetString + config.template);
+				}
 			});
 		}
 	});
 }, 60000 );
 
 
-var stream = T.stream('statuses/filter', { track: ['villavicencio', '#villavicencio'] })
-//var meta = [ '1.6029', '-74.8751', '4.6403', '-71.0876' ]
-//var stream = T.stream('statuses/filter', { locations: meta })
-
+var stream = T.stream('statuses/filter', { track: config.track })
 stream.on('tweet', function (data) {
-	var random = Math.floor((Math.random() * 5) + 1);
-	console.log('random' + random);
+	var random = Math.floor((Math.random() * 100) + 1);
 
-	if(random == 2){
-		console.log('https://twitter.com/'+data.user.screen_name+'/status/'+data.id_str);
+	if(random == 50){
+		if(data.user.id != config.userId){
+			T.post('favorites/create', { id: data.id_str },  function (err, data, response) {
+				var currentdate = new Date(); 
 
-		T.post('favorites/create', { id: data.id_str },  function (err, data, response) {
-			//console.log(data.id);
-		});
+				if(err){
+					console.log(err);
+				}else{
+					console.log(currentdate +', favorite: '+ data.id);
+				}
+			});
+		}
 	}
 });
