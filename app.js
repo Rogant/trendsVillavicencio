@@ -9,11 +9,6 @@ var T = new Twit({
   , access_token_secret:  config.accessTokenSecret
 });
 
-// Averiguar el id del lugar
-/*T.get('trends/closest', { lat: '4.1425', long: '-73.629444' },  function (err, data, response) {
-  console.log(err);
-  console.log(data);
-})*/
 
 var trends = new Array();
 
@@ -33,7 +28,6 @@ setInterval(function() {
 			if (!_.isUndefined(data)) {
 				if((tweetString.length + data.length) < 100){
 					tweetString = tweetString + " '" + data + "'";
-					//trends.push(data);
 				}
 			}
 		});
@@ -47,6 +41,20 @@ setInterval(function() {
 			});
 		}
 	});
-}, 60000 );
+}, 90000 );
 
 
+var stream = T.stream('statuses/filter', { track: ['villavicencio'] })
+//var meta = [ '1.6029', '-74.8751', '4.6403', '-71.0876' ]
+//var stream = T.stream('statuses/filter', { locations: meta })
+
+stream.on('tweet', function (data) {
+	var random = Math.floor((Math.random() * 10) + 1);
+	console.log(data.id);
+
+	if(random == 10){
+		T.post('favorites/create', { id: data.id },  function (err, data, response) {
+			console.log(data);
+		});
+	}
+});
