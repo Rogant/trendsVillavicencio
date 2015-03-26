@@ -36,10 +36,10 @@ setInterval(function() {
 		});
 
 		T.get('search/tweets', { q: trends[random10], count: 100 },  function (err, data, response) {
-			var random = Math.floor((Math.random() * 100) + 1);
+			var random = Math.floor((Math.random() * data.statuses.length) + 1);
 			var toFav = data.statuses[random];
 
-			if(toFav.user.id != config.userId){
+			if((toFav.user.id != config.userId) && (!toFav.favorited)){
 				T.post('favorites/create', { id: toFav.id_str },  function (err, data, response) {
 					if(err){
 						console.log(err);
@@ -68,7 +68,7 @@ stream.on('tweet', function (data) {
 	var random = Math.floor((Math.random() * 100) + 1);
 
 	if(random == 50){
-		if(data.user.id != config.userId){
+		if((data.user.id != config.userId) && (!data.favorited)){
 			T.post('favorites/create', { id: data.id_str },  function (err, data, response) {
 				var currentdate = new Date(); 
 
