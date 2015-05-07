@@ -1,0 +1,10 @@
+{
+	"consumerKey": "****",
+	"consumerSecret": "****",
+	"accessToken": "****",
+	"accessTokenSecret": "****",
+	"place": "23424787",
+	"userId": "2732826655",
+	"template": " ahora es una tendencia en #Bogotá",
+	"track": ["bogotá", "bogota", "Santafé de Bogotá"]
+}

@@ -1,0 +1,62 @@
+[
+	{
+		"name": "Colombia",
+		"placeType": {
+			"code": 12,
+			"name": "Country"
+		},
+		"url": "http://where.yahooapis.com/v1/place/23424787",
+		"parentid": 1,
+		"country": "Colombia",
+		"woeid": 23424787,
+		"countryCode": "CO"
+	},
+	{
+		"name": "Bogotá",
+		"placeType": {
+			"code": 7,
+			"name": "Town"
+		},
+		"url": "http://where.yahooapis.com/v1/place/368148",
+		"parentid": 23424787,
+		"country": "Colombia",
+		"woeid": 368148,
+		"countryCode": "CO"
+	},
+	{
+		"name": "Cali",
+		"placeType": {
+			"code": 7,
+			"name": "Town"
+		},
+		"url": "http://where.yahooapis.com/v1/place/368149",
+		"parentid": 23424787,
+		"country": "Colombia",
+		"woeid": 368149,
+		"countryCode": "CO"
+	},
+	{
+		"name": "Medellín",
+		"placeType": {
+			"code": 7,
+			"name": "Town"
+		},
+		"url": "http://where.yahooapis.com/v1/place/368150",
+		"parentid": 23424787,
+		"country": "Colombia",
+		"woeid": 368150,
+		"countryCode": "CO"
+	},
+	{
+		"name": "Barranquilla",
+		"placeType": {
+			"code": 7,
+			"name": "Town"
+		},
+		"url": "http://where.yahooapis.com/v1/place/368151",
+		"parentid": 23424787,
+		"country": "Colombia",
+		"woeid": 368151,
+		"countryCode": "CO"
+	}
+]
