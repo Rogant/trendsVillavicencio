@@ -14,6 +14,7 @@ function trends(config, city){
 	});
 
 	var trends = new Array();
+	var oldTweet;
 
 	setInterval(function() {
 		var currentdate = new Date(); 
@@ -67,14 +68,18 @@ function trends(config, city){
 						}
 					});
 
-					T.post('statuses/update', { status: tweetString + config.template }, function(err, data, response) {
-						if(err){
-							console.log(currentdate+': statuses/update '+city);
-							console.log(err);
-						}else{
-							console.log(currentdate+': '+tweetString + config.template);
-						}
-					});
+					if(tweetString != oldTweet){
+						T.post('statuses/update', { status: tweetString + config.template }, function(err, data, response) {
+							if(err){
+								console.log(currentdate+': statuses/update '+city);
+								console.log(err);
+							}else{
+								console.log(currentdate+': '+tweetString + config.template);
+							}
+						});
+
+						oldTweet = tweetString;
+					}
 				}
 			}
 		});
