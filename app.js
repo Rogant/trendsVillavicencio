@@ -1,11 +1,19 @@
 var _ = require("underscore");
 var Twit = require('twit');
 
-var colombia = require('./colombia.json');
-var bogota = require('./bogota.json');
-var medellin = require('./medellin.json');
+var cities = [
+	{
+		data: require('./colombia.json')
+	},
+	{
+		data: require('./bogota.json')
+	},
+	{
+		data: require('./medellin.json')
+	}
+];
 
-function trends(config, city){
+function trends(config){
 	var T = new Twit({
 	    consumer_key:         config.consumerKey
 	  , consumer_secret:      config.consumerSecret
@@ -13,6 +21,7 @@ function trends(config, city){
 	  , access_token_secret:  config.accessTokenSecret
 	});
 
+	var city = config.name;
 	var trends = new Array();
 	var oldTweet;
 
@@ -109,6 +118,6 @@ function trends(config, city){
 	});
 }
 
-trends(colombia, 'Colombia');
-trends(bogota, 'Bogotá');
-trends(medellin, 'Medellín');
+_.each(ciudades, function(ciudad){
+	trends(ciudad.data);
+});
