@@ -23,11 +23,12 @@ function trends(config){
 
 	var city = config.name;
 	var trends = new Array();
-	var oldTweet;
+	var history = {
+		tweets: [],
+		favorites: []
+	};
 
 	setInterval(function() {
-		var currentdate = new Date(); 
-
 		T.get('trends/place', { id: config.place },  function (err, data, response) {
 			if(err){
 				console.log(currentdate+': trends/place '+city);
@@ -59,39 +60,66 @@ function trends(config){
 									console.log(currentdate+': search/tweets '+city);
 									console.log(err);
 								}else{
-									var random = Math.floor((Math.random() * data.statuses.length) + 1);
+									var random = Math.floor((Math.random() * data.statuses.length));
 									var toFav = data.statuses[random];
 
 									if((toFav.user.id != config.userId) && _.isUndefined(toFav.retweeted_status) && toFav.user.lang == 'es'){
-										T.post('favorites/create', { id: toFav.id_str },  function (err, data, response) {
-											if(err){
-												console.log(currentdate+': favorites/create '+city);
-												console.log(err);
-											}else{
-												console.log(currentdate +': search favorite in '+city+' id '+ toFav.id_str);
-											}
-										});
+										if(_.pluck(history.favorites, 'id').indexOf(toFav.id_str) < 0){
+											T.post('favorites/create', { id: toFav.id_str },  function (err, data, response) {
+												if(err){
+													console.log(currentdate+': favorites/create '+city);
+													console.log(err);
+												}else{
+													console.log(currentdate +': search favorite in '+city+' id '+ toFav.id_str);
+													history.favorites.push({id: toFav.id_str, date: currentdate});
+												}
+											});
+										}
 									}
 								}
 							});
 						}
 					});
 
-					if(tweetString != oldTweet){
-						T.post('statuses/update', { status: tweetString + config.template }, function(err, data, response) {
+					var tweetFinal = tweetString + config.template;
+
+					if(_.pluck(history.tweets, 'tweet').indexOf(tweetFinal) < 0){
+						T.post('statuses/update', { status: tweetFinal }, function(err, data, response) {
 							if(err){
 								console.log(currentdate+': statuses/update '+city);
 								console.log(err);
 							}else{
-								console.log(currentdate+': '+tweetString + config.template);
+								console.log(currentdate+': '+tweetFinal);
+								history.tweets.push({tweet: tweetFinal, date: currentdate})
 							}
 						});
-
-						oldTweet = tweetString;
 					}
 				}
 			}
 		});
+
+		toRemove = [];
+		_.each(history.favorites, function(favorite, key){
+			if((currentdate.getTime() - favorite.date.getTime()) >= 1800000){
+				toRemove.push(key);
+			}
+		});
+
+		_.each(toRemove, function(removeKey){
+			history.favorites.splice(removeKey, 1);
+		});
+
+
+		toRemove = [];
+		_.each(history.tweets, function(tweet, key){		
+			if((currentdate.getTime() - tweet.date.getTime()) >= 1800000){
+				toRemove.push(key);
+			}
+		});
+
+		_.each(toRemove, function(removeKey){
+			history.tweets.splice(removeKey, 1);
+		});		
 	}, 60000 );
 
 
@@ -102,22 +130,25 @@ function trends(config){
 		if(random == 2){
 			if(!_.isUndefined(data.favorited)){
 				if((data.user.id != config.userId) && _.isUndefined(data.retweeted_status) && data.user.lang == 'es'){
-					T.post('favorites/create', { id: data.id_str },  function (err, data, response) {
-						var currentdate = new Date(); 
+					if(_.pluck(history.favorites, 'id').indexOf(data.id_str) < 0){
+						T.post('favorites/create', { id: data.id_str },  function (err, data, response) {
+							var currentdate = new Date(); 
 
-						if(err){
-							console.log(currentdate+': favorites/create '+city);
-							console.log(err);
-						}else{
-							console.log(currentdate +': stream favorite in '+city+' id '+ data.id_str);
-						}
-					});
+							if(err){
+								console.log(currentdate+': favorites/create '+city);
+								console.log(err);
+							}else{
+								console.log(currentdate +': stream favorite in '+city+' id '+ data.id_str);
+								history.favorites.push({id: data.id_str, date: currentdate});
+							}
+						});
+					}
 				}
 			}
 		}
 	});
 }
 
-_.each(ciudades, function(ciudad){
-	trends(ciudad.data);
+_.each(cities, function(city){
+	trends(city.data);
 });
