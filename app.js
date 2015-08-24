@@ -25,13 +25,19 @@ function trends(config){
 	var trends = new Array();
 	var history = {
 		tweets: [],
-		favorites: []
+		favorites: [],
+		errors: []
 	};
 
 	setInterval(function() {
+		var currentdate = new Date();
+
 		T.get('trends/place', { id: config.place },  function (err, data, response) {
 			if(err){
-				console.log(currentdate+': trends/place '+city);
+				history.errors.push({error: err.code, date: currentdate});
+
+				actions = history.tweets.length + history.favorites.length + history.errors.length;
+				console.log(currentdate+': trends/place '+city+', actions: ' + actions);
 				console.log(err);
 			}else{
 				var newTrends = _.map(data[0].trends, function(currentObject) {
@@ -57,25 +63,18 @@ function trends(config){
 
 							T.get('search/tweets', { q: data, count: 100, result_type: 'recent' },  function (err, data, response) {
 								if(err){
-									console.log(currentdate+': search/tweets '+city);
+									history.errors.push({error: err.code, date: currentdate});
+									actions = history.tweets.length + history.favorites.length + history.errors.length;
+									console.log(currentdate+': search/tweets '+city+', actions: ' + actions);
 									console.log(err);
 								}else{
-									var random = Math.floor((Math.random() * data.statuses.length));
-									var toFav = data.statuses[random];
+									do{
+										random = Math.floor((Math.random() * data.statuses.length));
+										toFav = data.statuses[random];
+									}while(_.pluck(history.favorites, 'uId').indexOf(toFav.user.id) >= 0)
 
-									if((toFav.user.id != config.userId) && _.isUndefined(toFav.retweeted_status) && toFav.user.lang == 'es'){
-										if(_.pluck(history.favorites, 'id').indexOf(toFav.id_str) < 0){
-											T.post('favorites/create', { id: toFav.id_str },  function (err, data, response) {
-												if(err){
-													console.log(currentdate+': favorites/create '+city);
-													console.log(err);
-												}else{
-													console.log(currentdate +': search favorite in '+city+' id '+ toFav.id_str);
-													history.favorites.push({id: toFav.id_str, date: currentdate});
-												}
-											});
-										}
-									}
+
+									favoritesCreate(toFav, 'search');
 								}
 							});
 						}
@@ -86,7 +85,9 @@ function trends(config){
 					if(_.pluck(history.tweets, 'tweet').indexOf(tweetFinal) < 0){
 						T.post('statuses/update', { status: tweetFinal }, function(err, data, response) {
 							if(err){
-								console.log(currentdate+': statuses/update '+city);
+								history.errors.push({error: err.code, date: currentdate});
+								actions = history.tweets.length + history.favorites.length + history.errors.length;
+								console.log(currentdate+': statuses/update '+city+', actions: ' + actions);
 								console.log(err);
 							}else{
 								console.log(currentdate+': '+tweetFinal);
@@ -100,7 +101,7 @@ function trends(config){
 
 		toRemove = [];
 		_.each(history.favorites, function(favorite, key){
-			if((currentdate.getTime() - favorite.date.getTime()) >= 1800000){
+			if((currentdate.getTime() - favorite.date.getTime()) >= 3600000){
 				toRemove.push(key);
 			}
 		});
@@ -112,13 +113,24 @@ function trends(config){
 
 		toRemove = [];
 		_.each(history.tweets, function(tweet, key){		
-			if((currentdate.getTime() - tweet.date.getTime()) >= 1800000){
+			if((currentdate.getTime() - tweet.date.getTime()) >= 3600000){
 				toRemove.push(key);
 			}
 		});
 
 		_.each(toRemove, function(removeKey){
 			history.tweets.splice(removeKey, 1);
+		});
+
+		toRemove = [];
+		_.each(history.errors, function(error, key){		
+			if((currentdate.getTime() - error.date.getTime()) >= 3600000){
+				toRemove.push(key);
+			}
+		});
+
+		_.each(toRemove, function(removeKey){
+			history.errors.splice(removeKey, 1);
 		});		
 	}, 60000 );
 
@@ -128,25 +140,32 @@ function trends(config){
 		var random = Math.floor((Math.random() * 100) + 1);
 
 		if(random == 2){
-			if(!_.isUndefined(data.favorited)){
-				if((data.user.id != config.userId) && _.isUndefined(data.retweeted_status) && data.user.lang == 'es'){
-					if(_.pluck(history.favorites, 'id').indexOf(data.id_str) < 0){
-						T.post('favorites/create', { id: data.id_str },  function (err, data, response) {
-							var currentdate = new Date(); 
-
-							if(err){
-								console.log(currentdate+': favorites/create '+city);
-								console.log(err);
-							}else{
-								console.log(currentdate +': stream favorite in '+city+' id '+ data.id_str);
-								history.favorites.push({id: data.id_str, date: currentdate});
-							}
-						});
-					}
-				}
+			if(_.pluck(history.favorites, 'uId').indexOf(data.user.id) < 0){
+				favoritesCreate(data, 'stream');
 			}
 		}
 	});
+
+
+	function favoritesCreate(data, source){
+		if((data.user.id != config.userId) && !_.isUndefined(data.favorited) && _.isUndefined(data.retweeted_status) && (data.user.lang == 'es' || data.user.lang == 'en')){
+			if(_.pluck(history.favorites, 'id').indexOf(data.id_str) < 0){
+				T.post('favorites/create', { id: data.id_str },  function (err, data2, response) {
+					var currentdate = new Date(); 
+
+					if(err){
+						history.errors.push({error: err.code, date: currentdate});
+						actions = history.tweets.length + history.favorites.length + history.errors.length;
+						console.log(currentdate+': favorites/create '+city+' id: '+data.id_str+', actions: ' + actions);
+						console.log(err);
+					}else{
+						console.log(currentdate +': '+source+' favorite in '+city+' id '+ data.id_str);
+						history.favorites.push({id: data.id_str, date: currentdate, uId: data.user.id});
+					}
+				});
+			}
+		}		
+	}
 }
 
 _.each(cities, function(city){
