@@ -2,9 +2,9 @@ var _ = require("underscore");
 var Twit = require('twit');
 
 var cities = [
-	{
-		data: require('./colombia.json')
-	},
+	//{
+	//	data: require('./colombia.json')
+	//},
 	{
 		data: require('./bogota.json')
 	},
@@ -68,9 +68,11 @@ function trends(config){
 									console.log(currentdate+': search/tweets '+city+', actions: ' + actions);
 									console.log(err);
 								}else{
+									var cont = 0;
+
 									do{
-										random = Math.floor((Math.random() * data.statuses.length));
-										toFav = data.statuses[random];
+										toFav = data.statuses[cont];
+										cont++;
 									}while(_.pluck(history.favorites, 'uId').indexOf(toFav.user.id) >= 0)
 
 
@@ -148,7 +150,10 @@ function trends(config){
 
 
 	function favoritesCreate(data, source){
-		if((data.user.id != config.userId) && !_.isUndefined(data.favorited) && _.isUndefined(data.retweeted_status) && (data.user.lang == 'es' || data.user.lang == 'en')){
+		if((data.user.id != config.userId) && !_.isUndefined(data.favorited) && _.isUndefined(data.retweeted_status) && (data.user.lang == 'es' || data.user.lang == 'en') && (data.user.time_zone == null || data.user.time_zone == 'America/Bogota') && (! data.user.default_profile_image)){
+			console.log('location')
+			console.log(data.user.time_zone)
+
 			if(_.pluck(history.favorites, 'id').indexOf(data.id_str) < 0){
 				T.post('favorites/create', { id: data.id_str },  function (err, data2, response) {
 					var currentdate = new Date(); 
