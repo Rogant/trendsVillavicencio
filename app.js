@@ -68,15 +68,13 @@ function trends(config){
 									console.log(currentdate+': search/tweets '+city+', actions: ' + actions);
 									console.log(err);
 								}else{
+									var favorited = false;
 									var cont = 0;
 
 									do{
-										toFav = data.statuses[cont];
+										favorited = favoritesCreate(data.statuses[cont], 'search');
 										cont++;
-									}while(_.pluck(history.favorites, 'uId').indexOf(toFav.user.id) >= 0)
-
-
-									favoritesCreate(toFav, 'search');
+									}while(!favorited)
 								}
 							});
 						}
@@ -137,39 +135,36 @@ function trends(config){
 	}, 60000 );
 
 
-	var stream = T.stream('statuses/filter', { track: config.track })
+	/*var stream = T.stream('statuses/filter', { track: config.track })
 	stream.on('tweet', function (data) {
 		var random = Math.floor((Math.random() * 100) + 1);
 
 		if(random == 2){
-			if(_.pluck(history.favorites, 'uId').indexOf(data.user.id) < 0){
-				favoritesCreate(data, 'stream');
-			}
+			favoritesCreate(data, 'stream');
 		}
-	});
+	});*/
 
 
 	function favoritesCreate(data, source){
-		if((data.user.id != config.userId) && !_.isUndefined(data.favorited) && _.isUndefined(data.retweeted_status) && (data.user.lang == 'es' || data.user.lang == 'en') && (data.user.time_zone == null || data.user.time_zone == 'America/Bogota') && (! data.user.default_profile_image)){
-			console.log('location')
-			console.log(data.user.time_zone)
+		if((data.user.id != config.userId) && !_.isUndefined(data.favorited) && _.isUndefined(data.retweeted_status) && (data.user.lang == 'es' || data.user.lang == 'en') && (data.user.time_zone == null || data.user.time_zone == 'America/Bogota') && (! data.user.default_profile_image) && _.pluck(history.favorites, 'uId').indexOf(data.user.id) < 0 && _.pluck(history.favorites, 'id').indexOf(data.id_str) < 0){
+			T.post('favorites/create', { id: data.id_str },  function (err, data2, response) {
+				var currentdate = new Date(); 
 
-			if(_.pluck(history.favorites, 'id').indexOf(data.id_str) < 0){
-				T.post('favorites/create', { id: data.id_str },  function (err, data2, response) {
-					var currentdate = new Date(); 
+				if(err){
+					history.errors.push({error: err.code, date: currentdate});
+					actions = history.tweets.length + history.favorites.length + history.errors.length;
+					console.log(currentdate+': favorites/create '+city+' id: '+data.id_str+', actions: ' + actions);
+					console.log(err);
+				}else{
+					console.log(currentdate +': '+source+' favorite in '+city+' id '+ data.id_str);
+					history.favorites.push({id: data.id_str, date: currentdate, uId: data.user.id});
+				}
+			});
 
-					if(err){
-						history.errors.push({error: err.code, date: currentdate});
-						actions = history.tweets.length + history.favorites.length + history.errors.length;
-						console.log(currentdate+': favorites/create '+city+' id: '+data.id_str+', actions: ' + actions);
-						console.log(err);
-					}else{
-						console.log(currentdate +': '+source+' favorite in '+city+' id '+ data.id_str);
-						history.favorites.push({id: data.id_str, date: currentdate, uId: data.user.id});
-					}
-				});
-			}
-		}		
+			return true;
+		}else{
+			return false;
+		}
 	}
 }
 
