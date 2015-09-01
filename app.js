@@ -92,7 +92,7 @@ function trends(config){
 						});
 					}
 
-					T.get('search/tweets', { q: config.track, count: 100, result_type: 'recent' },  function (err, data, response) {
+					T.get('search/tweets', { q: city, count: 100, result_type: 'recent' },  function (err, data, response) {
 						if(err){
 							console.log(currentdate+': search/tweets '+city);
 							console.log(err);
@@ -148,8 +148,8 @@ function trends(config){
 					console.log(currentdate+': favorites/create '+city+' id: '+data.id_str);
 					console.log(err);
 				}else{
-					console.log(currentdate +': '+source+' favorite in '+city+' id '+ data.id_str +' count: '+ history.favorites.length);
 					history.favorites.push({id: data.id_str, date: currentdate, uId: data.user.id});
+					console.log(currentdate +': '+source+' favorite in '+city+' id '+ data.id_str +' count: '+ history.favorites.length);
 				}
 			});
 
