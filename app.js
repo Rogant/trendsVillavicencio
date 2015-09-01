@@ -2,9 +2,9 @@ var _ = require("underscore");
 var Twit = require('twit');
 
 var cities = [
-	//{
-	//	data: require('./colombia.json')
-	//},
+	{
+		data: require('./colombia.json')
+	},
 	{
 		data: require('./bogota.json')
 	},
