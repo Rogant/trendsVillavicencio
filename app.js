@@ -10,7 +10,10 @@ var cities = [
 	},
 	{
 		data: require('./medellin.json')
-	}
+	},
+	{
+		data: require('./cali.json')
+	}	
 ];
 
 function trends(config){
